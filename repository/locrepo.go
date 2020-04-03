@@ -17,20 +17,28 @@ func AddLocation(p model.Pumps) error {
 	return store.Insert(locationBucket, p.ID, value)
 }
 
+func LocationById(key int) (model.Pumps, error) {
+	buf, err := store.SingleOrDefault(locationBucket, key)
+	if err != nil {
+		return model.Pumps{}, err
+	}
+	return modelFromByte(buf), nil
+}
+
 //LocationById get location by id
-func LocationById(key int) ([]model.Pumps, error) {
+/*func LocationsById(key int) ([]model.Pumps, error) {
 	buf, err := store.SingleOrDefault(locationBucket, key)
 	if err != nil {
 		return nil, err
 	}
 	return modelFromByte(buf), nil
-}
+}*/
 
-func modelFromByte(data []byte) []model.Pumps {
-	var result []model.Pumps
+func modelFromByte(data []byte) model.Pumps {
+	var result model.Pumps
 	err := json.Unmarshal(data, &result)
 	if err != nil {
-		return []model.Pumps{}
+		return model.Pumps{}
 	}
 	return result
 }

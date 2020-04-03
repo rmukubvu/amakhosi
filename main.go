@@ -1,18 +1,11 @@
 package main
 
-import (
-	"flag"
-	"fmt"
-	"github.com/rmukubvu/amakhosi/handlers"
-	"github.com/rmukubvu/amakhosi/store"
-	"log"
-	"net/http"
-)
+import "fmt"
 
-var port = flag.Int("p", 8000, "port number")
+//var port = flag.Int("p", 8000, "port number")
 
 func main() {
-	flag.Parse()
+	/*flag.Parse()
 	r := handlers.InitRouter()
 	//convert to port format
 	sPort := fmt.Sprintf(":%d", *port)
@@ -24,5 +17,15 @@ func main() {
 		store.CloseDb()
 		//log error
 		log.Fatal(err)
+	}*/
+	test(1, 2, 3, "hello")
+	test()
+}
+
+func test(args ...interface{}) {
+	if len(args) > 0 {
+		fmt.Printf("found some args %+v", args)
+	} else {
+		fmt.Printf("no args available")
 	}
 }

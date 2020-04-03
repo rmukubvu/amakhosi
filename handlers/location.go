@@ -21,7 +21,7 @@ func InitRouter() *mux.Router {
 
 //PostLocation add location to database
 func add(w http.ResponseWriter, req *http.Request) {
-	//retrieve the json and unmarshall it to pumps
+	//retrieve the json and unmarshal it to pumps
 	pump := model.Pumps{}
 	reqBody, err := ioutil.ReadAll(req.Body)
 	if err != nil {
@@ -31,7 +31,8 @@ func add(w http.ResponseWriter, req *http.Request) {
 	//here add the pump to the database
 	err = repository.AddLocation(pump)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(generateErrorMessage(err.Error()))
 		return
 	}
 	//return valid status back
@@ -44,16 +45,24 @@ func search(w http.ResponseWriter, req *http.Request) {
 	pathParams := mux.Vars(req)
 	w.Header().Set("Content-Type", "application/json")
 
-	//id := req.URL.Query().Get("id")
 	if val, ok := pathParams["id"]; ok {
 		key, err := strconv.Atoi(val)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(`{"message": "need an id"}`))
+			w.Write(generateErrorMessage(err.Error()))
 			return
 		}
 		res, _ := repository.LocationById(key)
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(res)
 	}
+}
+
+func generateErrorMessage(e string) []byte {
+	ie := model.InternalError{Message: e}
+	buf, err := json.Marshal(ie)
+	if err != nil {
+		return []byte(fmt.Sprintf(`{"message": "%s"}`, e))
+	}
+	return buf
 }

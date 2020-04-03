@@ -7,3 +7,14 @@ type Pumps struct {
 	Latitude     float64 `json:"lat"`
 	Longitude    float64 `json:"lon"`
 }
+
+type InternalError struct {
+	Message string `json:"message"`
+}
+
+type DatabaseConfig struct {
+	User string
+	Pwd  string
+	Host string
+	Port int
+}
