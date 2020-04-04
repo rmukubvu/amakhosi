@@ -10,6 +10,7 @@ const (
 	DbPwdKey      = "database.pwd"
 	DbHostKey     = "database.host"
 	DbPortKey     = "database.port"
+	DbNameKey     = "database.db"
 )
 
 var dbConfig model.DatabaseConfig
@@ -27,8 +28,9 @@ func init() {
 	dbConfig.Pwd = viper.GetString(DbPwdKey)
 	dbConfig.Host = viper.GetString(DbHostKey)
 	dbConfig.Port = viper.GetInt(DbPortKey)
+	dbConfig.DbName = viper.GetString(DbNameKey)
 }
 
-func DbConfig() model.DatabaseConfig {
-	return dbConfig
+func DataSourceName() string {
+	return dbConfig.String()
 }

@@ -1,58 +1,38 @@
 package store
 
-import "database/sql"
+import (
+	"database/sql"
+	"github.com/jmoiron/sqlx"
+	"github.com/rmukubvu/amakhosi/resource"
+	"github.com/square/squalor"
+)
 import _ "github.com/go-sql-driver/mysql"
 
-var dbm *sql.DB
+//var db *sqlx.DB
+var db *squalor.DB
 
 func init() {
-	var err error
-	dbm, err = sql.Open("mysql", "go_user:root@tcp(127.0.0.1:3306)/emali_hh")
+	const driver string = "mysql"
+	dataSourceName := resource.DataSourceName()
+	sdb, err := sql.Open(driver, dataSourceName)
 	if err != nil {
-		panic(err.Error())
+		panic(err)
 	}
+	db, _ = squalor.NewDB(sdb)
 }
 
-func InsertOne(query string, args ...interface{}) (int64, error) {
-	stmt, err := dbm.Prepare(query)
-	defer closeStmt(stmt)
-	if err != nil {
-		return 0, err
-	}
-	res, err := stmt.Exec(args)
-	if err != nil {
-		return 0, err
-	}
-	rowsAffected, err := res.RowsAffected()
-	if err != nil {
-		return 0, err
-	}
-	return rowsAffected, err
+func Insert(query string, args ...interface{}) (int64, error) {
+	result := db.MustExec(query, args...)
+	return result.RowsAffected()
 }
 
-func Fetch(query string, args ...interface{}) (interface{}, error) {
-	//check if there are any args
-	//will return a slice of results
-	var r *sql.Rows
-	var err error
-	if len(args) == 0 {
-		r, err = dbm.Query(query)
-	} else {
-		r, err = dbm.Query(query, args)
-	}
-	for r.Next() {
-		r.Scan()
-	}
+func Fetch(query string, args ...interface{}) (dest interface{}, err error) {
+	err = db.Select(&dest, query, args...)
+	return
 }
 
-func closeRows(rows *sql.Rows) {
-	if rows != nil {
-		rows.Close()
-	}
-}
-
-func closeStmt(stmt *sql.Stmt) {
-	if stmt != nil {
-		stmt.Close()
+func CloseDb() {
+	if db != nil {
+		db.Close()
 	}
 }

@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/rmukubvu/amakhosi/store"
+)
 
 //var port = flag.Int("p", 8000, "port number")
 
@@ -18,14 +21,15 @@ func main() {
 		//log error
 		log.Fatal(err)
 	}*/
-	test(1, 2, 3, "hello")
-	test()
+	test("27719084111", "7903245789130", 1)
+
 }
 
 func test(args ...interface{}) {
-	if len(args) > 0 {
-		fmt.Printf("found some args %+v", args)
-	} else {
-		fmt.Printf("no args available")
+	const query = "INSERT INTO accounts (account_number,personal_identifier,is_active,created_date) VALUES (?,?,?,now())"
+	a, err := store.Insert(query, args)
+	if err != nil {
+		fmt.Errorf("insert error %v", err)
 	}
+	fmt.Println(a)
 }
