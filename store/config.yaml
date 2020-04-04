@@ -1,0 +1,8 @@
+database:
+  user: go_user
+  pwd:  root
+  host: 127.0.0.1
+  port: 3306
+  db: emali_hh
+webserver:
+  port: 8000

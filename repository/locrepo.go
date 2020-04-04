@@ -2,42 +2,27 @@ package repository
 
 import (
 	"encoding/json"
+	"github.com/mitchellh/mapstructure"
 	"github.com/rmukubvu/amakhosi/model"
+	"github.com/rmukubvu/amakhosi/store"
 )
 
 //AddLocation to bolt db
 func AddLocation(p model.Pumps) error {
-	/*value, err := json.Marshal(p)
+	value, err := json.Marshal(p)
 	if err != nil {
 		return err
 	}
-	return store.Insert(locationBucket, p.ID, value)*/
-	return nil
-}
-
-func LocationById(key int) (model.Pumps, error) {
-	/*buf, err := store.SingleOrDefault(locationBucket, key)
-	if err != nil {
-		return model.Pumps{}, err
-	}
-	return modelFromByte(buf), nil*/
-	return model.Pumps{}, nil
+	return store.Insert("pumps", value)
 }
 
 //LocationById get location by id
-/*func LocationsById(key int) ([]model.Pumps, error) {
-	buf, err := store.SingleOrDefault(locationBucket, key)
+func LocationsById(pumpReference string) ([]model.Pumps, error) {
+	rs, err := store.Fetch("select * from pumps where pump_reference = ?", pumpReference)
 	if err != nil {
 		return nil, err
 	}
-	return modelFromByte(buf), nil
-}*/
-
-func modelFromByte(data []byte) model.Pumps {
-	var result model.Pumps
-	err := json.Unmarshal(data, &result)
-	if err != nil {
-		return model.Pumps{}
-	}
-	return result
+	var result []model.Pumps
+	err = mapstructure.Decode(rs, &result)
+	return result, nil
 }

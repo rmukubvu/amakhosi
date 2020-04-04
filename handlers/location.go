@@ -8,7 +8,6 @@ import (
 	"github.com/rmukubvu/amakhosi/repository"
 	"io/ioutil"
 	"net/http"
-	"strconv"
 )
 
 func InitRouter() *mux.Router {
@@ -22,7 +21,7 @@ func InitRouter() *mux.Router {
 //PostLocation add location to database
 func add(w http.ResponseWriter, req *http.Request) {
 	//retrieve the json and unmarshal it to pumps
-	pump := model.Pumps{}
+	var pump model.Pumps
 	reqBody, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		fmt.Fprintf(w, "Kindly enter valid data")
@@ -45,14 +44,12 @@ func search(w http.ResponseWriter, req *http.Request) {
 	pathParams := mux.Vars(req)
 	w.Header().Set("Content-Type", "application/json")
 
-	if val, ok := pathParams["id"]; ok {
-		key, err := strconv.Atoi(val)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write(generateErrorMessage(err.Error()))
-			return
-		}
-		res, _ := repository.LocationById(key)
+	if val, ok := pathParams["id"]; !ok {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(generateErrorMessage("id not specified or wrong id format"))
+		return
+	} else {
+		res, _ := repository.LocationsById(val)
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(res)
 	}
