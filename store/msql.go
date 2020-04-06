@@ -2,36 +2,62 @@ package store
 
 import (
 	"database/sql"
+	"github.com/rmukubvu/amakhosi/model"
 	"github.com/rmukubvu/amakhosi/resource"
 	"github.com/square/squalor"
 )
 import _ "github.com/go-sql-driver/mysql"
 
-var db *squalor.DB
+var (
+	db    *squalor.DB
+	cache = make(map[string]bool)
+)
 
 func init() {
 	const driver string = "mysql"
 	dataSourceName := resource.DataSourceName()
 	sdb, err := sql.Open(driver, dataSourceName)
 	if err != nil {
-		panic(err)
+		panicOnError(err)
 	}
 	db, _ = squalor.NewDB(sdb)
 }
 
 func Insert(bind string, model interface{}) error {
-	_, err := db.BindModel(bind, model)
-	if err != nil {
-		panicOnError(err)
+	//cannot bind twice .. check if bound already , else skip this
+	if val := cache[bind]; !val {
+		_, err := db.BindModel(bind, model)
+		if err != nil {
+			return err
+		}
+		cache[bind] = true
 	}
-	err = db.Insert(model)
+	err := db.Insert(model)
 	return err
+}
+
+func FetchPumps(query string, args ...interface{}) ([]model.Pumps, error) {
+	rows, err := db.Query(query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	rs := make([]model.Pumps, 0)
+	for rows.Next() {
+		var t model.Pumps
+		if err := rows.Scan(&t.ID, &t.LocationName, &t.Latitude, &t.Longitude, &t.PumpReference); err != nil {
+			return nil, err
+		}
+		rs = append(rs, t)
+	}
+	return rs, nil
 }
 
 func Fetch(query string, args ...interface{}) (map[string]interface{}, error) {
 	rows, err := db.Query(query, args...) // Note: Ignoring errors for brevity
 	if err != nil {
-		panicOnError(err)
+		return nil, err
 	}
 	cols, _ := rows.Columns()
 
@@ -61,13 +87,6 @@ func Fetch(query string, args ...interface{}) (map[string]interface{}, error) {
 
 func panicOnError(err error) {
 	if err != nil {
-		closeDb()
 		panic(err)
-	}
-}
-
-func closeDb() {
-	if db != nil {
-		db.Close()
 	}
 }
