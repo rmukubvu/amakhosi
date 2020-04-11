@@ -16,6 +16,6 @@ func main() {
 	//convert to port format
 	sPort := fmt.Sprintf(":%d", *port)
 	//show on stdout
-	/*fmt.Printf("Connecting to port [%s]", sPort)*/
+	fmt.Printf("Connecting to port [%s]", sPort)
 	log.Fatal(http.ListenAndServe(sPort, r))
 }

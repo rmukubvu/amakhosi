@@ -1,24 +1,22 @@
-############################
-# STEP 1 build executable binary
-############################
-FROM golang:alpine AS builder
-# Install git.
-# Git is required for fetching the dependencies.
+# We specify the base image we need for our
+# go application
+FROM golang:1.12.0-alpine3.9
+# We create an /app directory within our
 RUN apk update && apk add --no-cache git
-WORKDIR $GOPATH/src/github.com/rmukubvu/amakhosi/
-COPY . .
-# Fetch dependencies.
-# Using go get.
-RUN go get -d -v
-# Build the binary.
-RUN go build -o /go/bin/amakhosi
-############################
-# STEP 2 build a small image
-############################
-FROM scratch
-# Copy our static executable.
-COPY --from=builder /go/bin/amakhosi /go/bin/amakhosi
-#esxppose
+# image that will hold our application source
+# files
+RUN mkdir /app
+# We copy everything in the root directory
+# into our /app directory
+ADD . /app
+# We specify that we now wish to execute
+# any further commands inside our /app
+# directory
+WORKDIR /app
+# we run go build to compile the binary
+# executable of our Go program
+RUN go build -o amakhosi
+# Our start command which kicks off
 EXPOSE 8000
-# Run the hello binary.
-ENTRYPOINT ["./go/bin/amakhosi"]
+# our newly created binary executable
+CMD ["./app/amakhosi"]
